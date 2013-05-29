@@ -1,7 +1,7 @@
 //==================================================
 // 数据缓存模块
 //==================================================
-define("data", ["$lang"], function($) {
+define("data", ["lang"], function($) {
     var owners = [],
         caches = [];
     /**
@@ -36,7 +36,7 @@ define("data", ["$lang"], function($) {
         if(!pvt) {
             table = table.data;
         }
-        if(name && typeof name == "object") {
+        if(name && typeof name === "object") {
             $.mix(table, name); //写入一组属性
         } else if(getOne && data !== void 0) {
             table[name] = data; //写入单个属性
@@ -65,10 +65,9 @@ define("data", ["$lang"], function($) {
     function innerRemoveData(owner, name, pvt) {
         var index = owners.indexOf(owner);
         if(index > -1) {
-            var delOne = typeof name == "string",
+            var delOne = typeof name === "string",
                 table = caches[index],
-                cache = table,
-                clear = 1
+                cache = table;
             if(delOne) {
                 if(!pvt) {
                     table = table.data;
@@ -76,19 +75,8 @@ define("data", ["$lang"], function($) {
                 if(table) {
                     delOne = table[name];
                     delete table[name];
-                }
-                for(var key in cache) {
-                    if(key == "data") {
-                        for(var i in cache.data) {
-                            clear = 0;
-                            break;
-                        }
-                    } else {
-                        clear = 0;
-                        break;
-                    }
-                }
-                if(clear) {
+                }//在data_fix模块，我们已经对JSON进行补完
+                if(JSON.stringify(cache) === '{"data":{}}') {
                     owners.splice(index, 1);
                     caches.splice(index, 1);
                 }
@@ -96,7 +84,7 @@ define("data", ["$lang"], function($) {
             return delOne; //返回被移除的数据
         }
     }
-    var rparse = /^(?:null|false|true|NaN|\{.*\}|\[.*\])$/
+    var rparse = /^(?:null|false|true|NaN|\{.*\}|\[.*\])$/;
     $.mix({
 
         hasData: function(owner) {
@@ -128,7 +116,7 @@ define("data", ["$lang"], function($) {
             //将HTML5 data-*的属性转换为更丰富有用的数据类型，并保存起来
             var data, _eval, key = $.String.camelize(name);
             if(cache && (key in cache)) return cache[key];
-            if(arguments.length != 4) {
+            if(arguments.length !== 4) {
                 var attr = "data-" + name.replace(/([A-Z])/g, "-$1").toLowerCase();
                 value = target.getAttribute(attr);
             }
@@ -165,7 +153,7 @@ define("data", ["$lang"], function($) {
             }
         }
     });
-    return $
+    return $;
 });
 
 /**

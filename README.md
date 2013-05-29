@@ -9,17 +9,17 @@ mass Framework
 <p>mass Framework的模块化经过一年化调整与改良，大致分为四类：</p>
 <ol>
     <li>种子模块， mass.js，最精简的内核， 包含模块加载系统。</li>
-    <li>补丁模块， lang_fix.js, css_fix.js, event_fix.js, node_fix.js, attr_fix, 主要是用于兼容IE678的，在chrome1+, FF4+, opera10+, safari4+是不会加载它们的。</li>
+    <li>补丁模块， lang_fix.js, css_fix.js, event_fix.js, node_fix.js, attr_fix, ajax_fix, 主要是用于兼容IE678的，在chrome1+, FF4+, opera10+, safari4+是不会加载它们的。</li>
     <li>核心模块， 所有位于根目录下，但不在其子目录下的JS文件， 提供框架的核心功能。</li>
     <li>外围模块， 位于more的JS文件。</li>
 </ol>
 <hr/>
 <h3>mass Framework的源码阅读顺序</h3>
 <p>都是位于src目录下，里面的子目录是外围模块。</p>
-<p>mass.js -> lang.js(lang_fix.js) ->  class.js -> interact.js -> data.js -> support.js -> query.js -><br/>
-    node.js(node_fix.js) -> css.js(css_fix.js) -> attr.js(attr_fix.js) -> event.js(event_fix.js) -> fx.js -> ajax.js
+<p>mass.js -> lang.js(lang_fix.js) ->  class.js -> flow.js -> data.js -> support.js -> query.js -><br/>
+    node.js(node_fix.js) -> css.js(css_fix.js) -> attr.js(attr_fix.js) -> event.js(event_fix.js) -> fx.js -> ajax.js(ajax_fix.js)
 </p>
-<p>lang, class, interact, data专注于语言层面，query, node, css, attr, event, fx, ajax专注于DOM层面。</p>
+<p>lang, class, flow, data专注于语言层面，query, node, css, attr, event, fx, ajax专注于DOM层面。</p>
 <hr/>
 <h3>mass Framework的文档：</h3>
 <p>它大部分文档已经转移到newland.js项目之下，我们可以在<a href="http://rubylouvre.github.com/doc/index.html">这里</a>访问得到它！</p>
@@ -28,9 +28,8 @@ mass Framework
     <li>多库共存。</li>
     <li>多版本共存。</li>
     <li>高度模块化，使用AMD规范的加载系统，实现并行加载，按需加载，自行处理依赖，有利于调试与最小化资源调度。(目前版本为v21)</li>
-    <li>interact模块提供三种组件交互的机制，$.Observer是提供观察者模块，以实现自定义事件与一般化的订阅机制；<br/>
-        $.Flow, 专注于流程控制与从多处获取数据，解耦回调嵌套，减少等待时间，实现多路监听，一处归化;<br/>
-        $.Twitter, 类似twitter的观察者模式，可以看作是事件强化版，实现单点发布 自愿收听 单向联接 分散传播
+    <li>flow提供自定义事件机制，$.Observer是一般化的观察者模块，</br/>
+	$.Flow, 是其强化版， 专注于流程控制与从多处获取数据，解耦回调嵌套，减少等待时间，实现多路监听，一处归化;<br/>
     </li>
     <li>强大的类工厂。（目前版本为v11）</li>
     <li>AS3式的补帧动画系统，支持回放，旋转，暂停！</li>
@@ -39,6 +38,7 @@ mass Framework
     <li>lang_fix模块已经为您修复了旧式IE的语言BUG，与添加上ECMA262v5的绝对大多数新API的支持与，因此痛快使用 String.prototype.trim,
         Array.prototype.forEach, Array.prototype.map,Array.prototype.filter, Array.prototype.reduce,
         Function.prototype.bind吧。</li>
+     <li>ajax模块支持XMLHTTPRequest2.0绝对大多数功能，能在旧式IE下上传下载二进制数据。</li>
     <li>lang模块的提供语言链对象相当于把underscore.js这个库整合进来，你能想到语言扩展都有了。</li>
     <li>API 95%与jQuery神似，学习成本极低。</li>
     <li>全中文注释与大量参考链接与版本变更日志，绝对对你提高JS水平的好教程。</li>
@@ -62,7 +62,8 @@ require("ready,node",function(){
 <p>我们在请求node.js时，会自动加载其依赖，如lang.js,support.js,class.js,query.js,data.js等等，
     IE下还会加载lang_fix.js，但你无需理会它是怎么处理，只需专注于你的业务逻辑就行了。</p>
 <p>如果嫌麻烦，直接像jQuery那样，不过会把许多无用的部分都加载下来了。</p>
-<pre>
+<pre style="color:red">
+
 $(function(){
   $("&lt;pre&gt;将日志打印到页面上&lt;/pre&gt;").appendTo("body")
 });
@@ -75,6 +76,7 @@ $(function(){
  });
 });
 </pre>
+
 <p>相比于jQuery只限于DOM的操作，mass Framework对基本数据类型提供了大量的工具方法，甚至连es6的候选方法你都能找到。它们分别挂在$.String, $.Array, $.Number, $.Object之下。
 
 <h3>多库共存</h3>
@@ -109,9 +111,23 @@ $(function(){
 在你需要的时候，可以快速派上用场。这种感觉就像在组织自己的军团一样，军团中有驯服得很好的，也有个性还很浮躁的刺儿头。
 你慢慢将这支军团由一盘散沙驯练成精锐部队，这感觉真好。
                                                      ——真阿当
+	以前的程序员们，经常会为了做一个数据处理程序而自己开发一门编程语言。
+	比如Charls Moore在美国国家天文台，做射电望远镜数据提取程序，开发了Forth。有的为了给自己写的书排版漂亮些，
+	写了TeX。近的说，有人为了做网站写了Rails 和 Django。想想都不好意思称自己是程序员了。												 
 </pre>
 <h3>JS文件的合并</h3>
-<p>请利用我的newland.js项目</p>
+<p>使用combo.js</p>
+<pre>
+node.exe combo
+</pre>
+
+<h3>JS文件的合并</h3>
+<p>使用compiler.jar( GCC，需要有JAVA运行环境)</p>
+<pre>
+java -jar compiler.jar --js mass_merge.js --js_output_file mass_min.js
+java -jar compiler.jar --js avalon.js --js_output_file avalon_min.js
+</pre>
+
 <h3>BUG提交与插件的友情贡献。</h3>
 
 <p>大家在github注册后，就可以在<a href="https://github.com/RubyLouvre/mass-Framework/issues">https://github.com/RubyLouvre/mass-Framework/issues</a>里面提交建议或BUG什么了。</p>
@@ -134,7 +150,7 @@ $(function(){
 <img src="https://raw.github.com/RubyLouvre/mass-Framework/master/course/7.jpg"/>
 <p>接着就是修改代码了，这要在自己发现真的存在漏洞或有什么改进之处才要动手啊！不能想改就改。要通读你要改的那一部分，必要时通读全框架。因此新手们最好找国内高手的框架进行学习，
     一来中文注释比较亲切，二来也方便接下来的交流。通常我们在clone git到本地进行修改的，这又涉及另外一些工具与命令的学习。不过，github完全允许你在线上进行修改，提交，合并。</p>
-<p>比如你发现data模块的注释与mass模块的不一样，要统一合并，将函数外的注释移到里头。（千万不要轻视这工作，jQuery的许多代码贡献者一开始就只能帮JR大神修修注释，在看注释时也了解到不少东西）</p>
+<p>比如你发现data模块的注释与mass模块的不一样，要统一合并，将函数外的注释移到里头。（更有意义的方式是，打开<a href="http://www.jshint.com/">http://www.jshint.com/</a>，就能发现许多小问题。</p>
 <img src="https://raw.github.com/RubyLouvre/mass-Framework/master/course/8.jpg"/>
 <img src="https://raw.github.com/RubyLouvre/mass-Framework/master/course/9.jpg"/>
 <p>变成编辑状态，不过不太好用。大家有条件一定要学学如何使用TortoiseGit或Sublime Text 2下载github项目到本地，进行修改，提交，pull request啊！</p>
