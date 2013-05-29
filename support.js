@@ -37,7 +37,7 @@ define("support", ["mass"], function($) {
         traverseAll: !! div[TAGS]("param").length,
         //https://prototype.lighthouseapp.com/projects/8886/tickets/264-ie-can-t-create-link-elements-from-html-literals
         //IE678不能通过innerHTML生成link,style,script节点（bug）
-        createAll: !! div[TAGS]("link").length,
+        noscope: !div[TAGS]("link").length ,
         //IE6789由于无法识别HTML5的新标签，因此复制这些新元素时也不正确（bug）
         cloneHTML5: DOC.createElement("nav").cloneNode(true).outerHTML !== "<:nav></:nav>",
         //在标准浏览器下，cloneNode(true)是不复制事件的，以防止循环引用无法释放内存，而IE却没有考虑到这一点，把事件复制了（inconformity）
@@ -58,8 +58,7 @@ define("support", ["mass"], function($) {
         //        keepSize: true,
         //getComputedStyle API是否能支持将left, top的百分比原始值自动转换为像素值
         pixelPosition: true,
-        transition: false,
-        calc: false
+        transition: false
     };
     //IE6789的checkbox、radio控件在cloneNode(true)后，新元素没有继承原来的checked属性（bug）
     input.checked = true;
@@ -71,20 +70,11 @@ define("support", ["mass"], function($) {
     //但在Safari中，获取被设置为disabled的select的值时，由于所有option元素都被设置为disabled，会导致无法获取值。
     select.disabled = true;
     support.optDisabled = !opt.disabled;
-    /**    var clickFn
-    if(!div.addEventListener && div.attachEvent && div.fireEvent) {
-        div.attachEvent("onclick", clickFn = function() {
-            support.noCloneEvent = false; //w3c的节点复制是不复制事件的
-        });
-        div.cloneNode(true).fireEvent("onclick");
-        div.detachEvent("onclick", clickFn);
-    }
-    */
     //IE下对div的复制节点设置与背景有关的样式会影响到原样式,说明它在复制节点对此样式并没有深拷贝,还是共享一份内存
     div.style.backgroundClip = "content-box";
     div.cloneNode(true).style.backgroundClip = "";
     support.cloneBackgroundStyle = div.style.backgroundClip === "content-box";
-    var table = div[TAGS]("table")[0]
+    var table = div[TAGS]("table")[0];
     try { //检测innerHTML与insertAdjacentHTML在某些元素中是否存在只读（这时会抛错）
         table.innerHTML = "<tr><td>1</td></tr>";
         support.innerHTML = true;
@@ -93,35 +83,29 @@ define("support", ["mass"], function($) {
     } catch(e) {};
 
     a = select = table = opt = style = null;
-    $.require("ready", function() {
+    require("ready", function() {
         var body = DOC.body;
         if(!body) //frameset不存在body标签
         return;
         try {
             var range = DOC.createRange();
-            range.selectNodeContents(body); //fix opera(9.2~11.51) bug,必须对文档进行选取
+            range.selectNodeContents(body.firstChild || body); 
+            //fix opera(9.2~11.51) bug,必须对文档进行选取，尽量只选择一个很小范围
             support.fastFragment = !! range.createContextualFragment("<a>");
-            $.commonRange = range;
+            $.cachedRange = range;
         } catch(e) {};
-        div.style.cssText = "position:absolute;top:-1000px;left:-1000px;"
+        div.style.cssText = "position:absolute;top:-1000px;left:-1000px;";
         body.insertBefore(div, body.firstChild);
         var a = '<div style="height:20px;display:inline-block"></div>';
         div.innerHTML = a + a; //div默认是block,因此两个DIV会上下排列0,但inline-block会让它们左右排列
         support.inlineBlock = div.offsetHeight < 40; //检测是否支持inlineBlock
         if(window.getComputedStyle) {
             div.style.top = "1%";
-            var computed = window.getComputedStyle(div, null) || {}
+            var computed = window.getComputedStyle(div, null) || {};
             support.pixelPosition = computed.top !== "1%";
-            for(var arr = ["calc", "-webkit-calc", "-moz-calc"], i = 0; ib = arr[i++];) {
-                div.style.width = a + "(7px + 8px)"; //注意+两边有空白
-                if(computed.width == "15px") {
-                    support.calc = a;
-                    break;
-                }
-            }
         }
         //http://stackoverflow.com/questions/7337670/how-to-detect-focusin-support
-        div.innerHTML = "<a href='#'></a>"
+        div.innerHTML = "<a href='#'></a>";
         if(!support.focusin) {
             a = div.firstChild;
             a.addEventListener('focusin', function() {
@@ -142,19 +126,4 @@ define("support", ["mass"], function($) {
 2011.9.23增加fastFragment判定
 2012.1.28有些特征嗅探必须连接到DOM树上才能进行
 2012.5.22 精简插入DOM树后的五种检测
-
-    var endNames = {
-        WebkitTransition : "webkitTransitionEnd",
-        MozTransition    : "transitionend" ,
-        OTransition      : "oTransitionEnd otransitionend" ,
-        transition       : "transitionend"
-    }
-    for (var name in endNames){
-        if (div.style[name] !== undefined) {
-            support.transition  = {
-                end: endNames[name]
-            }
-            break
-        }
-    }
 */
